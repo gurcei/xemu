@@ -41,6 +41,8 @@ static off_t sd_card_size;
 static int   sdcard_bytes_read = 0;
 static int   sd_is_read_only;
 static int   mounted;
+static int misaligned_sector_read = 0;
+
 // 4K buffer space: Actually the SD buffer _IS_ inside this, also the F011 buffer should be (FIXME: that is not implemented yet right now!!)
 Uint8 disk_buffers[0x1000];
 
@@ -164,6 +166,14 @@ static off_t host_seek_to ( Uint8 *addr_buffer, int addressing_offset, const cha
 		DEBUG("SDCARD: SEEK: invalid offset requested for %s with offset " PRINTF_LLD " PC=$%04X" NL, description, (long long)image_offset, cpu65.pc);
 		return -1;
 	}
+	if ( (image_offset % 512) != 0)
+	{
+		DEBUG("SDCARD: SEEK: invalid offset for SD, not aligned to 512-byte boundary");
+		misaligned_sector_read = 1;
+		return -2;
+	}
+	misaligned_sector_read = 0;
+
 	if (lseek(fd, image_offset, SEEK_SET) != image_offset)
 		FATAL("SDCARD: SEEK: image seek host-OS failure: %s", strerror(errno));
 	return image_offset;
@@ -176,8 +186,8 @@ static int diskimage_read_block ( Uint8 *io_buffer, Uint8 *addr_buffer, int addr
 	int ret;
 	if (sdfd < 0)
 		return -1;
-	if (host_seek_to(addr_buffer, addressing_offset, description, size_limit, fd) < 0)
-		return -1;
+	if ( (ret = host_seek_to(addr_buffer, addressing_offset, description, size_limit, fd)) < 0)
+		return ret;
 	ret = xemu_safe_read(fd, io_buffer, 512);
 	if (ret != 512)
 		FATAL("SDCARD: %s failure ... ERROR: %s", description, ret >= 0 ? "not 512 bytes could be read" : strerror(errno));
@@ -231,7 +241,8 @@ static Uint8 sdcard_read_status ( void )
 {
 	Uint8 ret = sd_status;
 	DEBUG("SDCARD: reading SD status $D680 result is $%02X PC=$%04X" NL, ret, cpu65.pc);
-	sd_status &= ~(SD_ST_BUSY1 | SD_ST_BUSY0);
+	if (!misaligned_sector_read)
+		sd_status &= ~(SD_ST_BUSY1 | SD_ST_BUSY0);
 	return ret;
 }
 
@@ -254,6 +265,9 @@ static void sdcard_command ( Uint8 cmd )
 			ret = diskimage_read_block(sd_buffer, sd_sector_bytes, 0, "reading[SD]", sd_card_size, sdfd);
 			if (ret < 0) {
 				sd_status |= SD_ST_ERROR | SD_ST_FSM_ERROR; // | SD_ST_BUSY1 | SD_ST_BUSY0;
+				if (ret == -2) {
+					sd_status |= SD_ST_BUSY1 | SD_ST_BUSY0;
+				}
 				sdcard_bytes_read = 0;
 			} else {
 				sd_status &= ~(SD_ST_ERROR | SD_ST_FSM_ERROR);
