@@ -28,7 +28,7 @@ include $(TOPDIR)/build/Makefile.$(ARCH)
 
 # Remove -flto (link time optimization) if you have problems
 # If you want to compile with -g option, also *DELETE* the -flto, both of them together known to be problematic!
-DEBUG			=
+DEBUG			= -g -O0
 
 # Resolve syms from target specific Makefile which includes this one, based on the $PRG_TARGET (for multi make target emu targets ...)
 CFLAGS_TARGET		= $(CFLAGS_TARGET_$(PRG_TARGET))
