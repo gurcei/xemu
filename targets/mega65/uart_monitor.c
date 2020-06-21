@@ -173,6 +173,16 @@ static void execute_command ( char *cmd )
 			if (cmd && check_end_of_command(cmd, 1))
 				m65mon_dumpmem28(par1);
 			break;
+		case 'M':
+			cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFFFFF);
+			if (cmd && check_end_of_command(cmd, 1))
+        for (int k = 0; k < 32; k++)
+        {
+				  m65mon_dumpmem28(par1);
+          par1 += 16;
+          umon_printf("\n");
+        }
+			break;
     case 's':
       cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFFFFF);
       setmem28(cmd, par1);
