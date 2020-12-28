@@ -63,6 +63,9 @@ static int  umon_write_pos, umon_read_pos;
 static int  umon_echo;
 static char umon_read_buffer [0x1000];
 
+static int loadcmdflag = 0;
+static int loadcmdcurraddr = 0;
+static int loadcmdendaddr = 0;
 
 // WARNING: This source is pretty ugly, ie not so much check of overflow of the output (write) buffer.
 
@@ -196,6 +199,11 @@ static void execute_command ( char *cmd )
 			cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFFFFF);
 			setmem28(cmd, par1);
 			break;
+    case 'l':
+      loadcmdflag = 1;
+      cmd = parse_hex_arg(cmd, &loadcmdcurraddr, 0, 0xFFFF);
+      cmd = parse_hex_arg(cmd, &loadcmdendaddr, 0, 0xFFFF);
+      break;
 		case 't':
 			if (!*cmd)
 				m65mon_do_trace();
@@ -473,6 +481,11 @@ int is_received_string_fully_parsed(int ret)
   return locptr == &umon_read_buffer[umon_read_pos+ret];
 }
 
+int get_unparsed_bytes_remaining_count(int ret)
+{
+  return (int)(&umon_read_buffer[umon_read_pos+ret] - locptr);
+}
+
 // had to create my own strtok() equivalent that would tokenise on *either* '\r' or '\n'
 char * find_next_cmd(char *loc)
 {
@@ -492,6 +505,40 @@ char * find_next_cmd(char *loc)
       return loc;
     }
     p++;
+  }
+
+  return 0;
+}
+
+int read_loadcmd_data(char* buff, int count)
+{
+  char *p = buff;
+
+  while (count != 0)
+  {
+    m65mon_setmem16(loadcmdcurraddr, *p);
+    loadcmdcurraddr++;
+    p++;
+    count--;
+    if (loadcmdcurraddr == loadcmdendaddr)
+    {
+      loadcmdflag = 0;
+      break;
+    }
+  }
+
+  return count;
+}
+
+// return: 1=we loaded stuff into memory
+//         0=we didn't
+int check_loadcmd(char* buff, int ret)
+{
+  if (loadcmdflag)
+  {
+    int remaining = read_loadcmd_data(buff, ret);
+    // TODO: I should probably see if there is a command immediately after this, but for now, I'll assume there isn't.
+    return 1;
   }
 
   return 0;
@@ -528,6 +575,9 @@ void read_from_socket(void)
     }
     printf("\n");
  
+    if (check_loadcmd(&umon_read_buffer[umon_read_pos], ret))
+      return;
+
     char *p;
     if (umon_read_pos == 0)
       p = find_next_cmd(umon_read_buffer);
@@ -536,7 +586,7 @@ void read_from_socket(void)
 
     while (p)
     {
-      printf("find_next_cmd p = %08X\n", p);
+      printf("find_next_cmd p = %08X\n", (unsigned int)p);
       umon_echo = 1;
       echo_command(p, ret);
 
@@ -553,6 +603,12 @@ void read_from_socket(void)
         // will just hang!
       }
 
+      if (check_loadcmd(locptr, get_unparsed_bytes_remaining_count(ret)))
+      {
+        umon_read_pos = 0;
+        umon_read_buffer[umon_read_pos] = 0;
+        return;
+      }
       p = find_next_cmd(NULL); // prepare to read next command on next iteration (if there is one)
     }
 
