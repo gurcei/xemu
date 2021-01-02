@@ -343,8 +343,9 @@ static void execute_command ( char *cmd )
 			break;
     case 'l':
 			loadcmdflag = 1;
-			cmd = parse_hex_arg(cmd, &loadcmdcurraddr, 0, 0xFFFF);
+			cmd = parse_hex_arg(cmd, &loadcmdcurraddr, 0, 0xFFFFFFF);
 			cmd = parse_hex_arg(cmd, &loadcmdendaddr, 0, 0xFFFF);
+			loadcmdendaddr += (loadcmdcurraddr & 0xFFF0000);
 			break;
 		case 't':
 			if (!*cmd)
