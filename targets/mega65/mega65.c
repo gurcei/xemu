@@ -666,7 +666,7 @@ static void emulation_loop ( void )
 			if (m65mon_callback) {	// delayed uart monitor command should be finished ...
 				m65mon_callback();
 				m65mon_callback = NULL;
-				uartmon_finish_command();
+				uartmons_finish_command();
 			}
 #endif
 			// we still need to feed our emulator with update events ... It also slows this pause-busy-loop down to every full frames (~25Hz) <--- XXX totally inaccurate now!
