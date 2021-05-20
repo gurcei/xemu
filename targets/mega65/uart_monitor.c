@@ -694,6 +694,7 @@ int read_loadcmd_data(char* buff, int count)
     if (loadcmdcurraddr == loadcmdendaddr)
     {
       loadcmdflag = 0;
+      uartmon_finish_command();
       break;
     }
   }
