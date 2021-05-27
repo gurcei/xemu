@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 #define UNCONNECTED	XS_INVALID_SOCKET
 
-#define UMON_WRITE_BUFFER_SIZE	0x4000
+#define UMON_WRITE_BUFFER_SIZE	0x10000
 #define umon_printf(...)	do { \
   for (int idx = 0; idx < MAXPORTS; idx++) { \
     if (comdet[idx].sock_server != UNCONNECTED) { \
