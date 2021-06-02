@@ -165,7 +165,6 @@ static void execute_command ( comms_details_type *cd, char *cmd )
 	int bank;
 	int par1;
 	char *p = cmd;
-  printf("execute_command(%s)\n", cmd);
 	while (*p)
 		if (p == cmd && (*cmd == 32 || *cmd == '\t' || *cmd == 8))
 			cmd = ++p;
@@ -526,16 +525,6 @@ int write_to_socket(comms_details_type *cd)
   }
   if (ret > 0) {
     //debug_buffer_slice(umon_write_buffer + umon_write_pos, ret);
-    printf("SENT: ");
-    int i = 0;
-    while(cd->umon_write_buffer[cd->umon_write_pos+i] != 0 && i < ret)
-    {
-      int pos = cd->umon_write_pos + i;
-      if (cd->umon_write_buffer[pos]>=' ') printf("%c",cd->umon_write_buffer[pos]); else printf("[$%02X]",cd->umon_write_buffer[pos]);
-      i++;
-    }
-    printf("\n");
-
     cd->umon_write_pos += ret;
     cd->umon_write_size -= ret;
     if (cd->umon_write_size < 0)
@@ -638,16 +627,6 @@ void read_from_socket(comms_details_type *cd)
     // assure a null terminator at end of data
     cd->umon_read_buffer[cd->umon_read_pos+ret] = 0;
 
-    /* There may be multiple commands within the buffer. If so, handle them all, one by one */
-    printf("RECEIVED: ");
-    int i = 0;
-    while(cd->umon_read_buffer[cd->umon_read_pos+i] != 0)
-    {
-      int pos = cd->umon_read_pos + i;
-      if (cd->umon_read_buffer[pos]>=' ') printf("%c",cd->umon_read_buffer[pos]); else printf("[$%02X]",(unsigned char)cd->umon_read_buffer[pos]);
-      i++;
-    }
-    printf("\n");
  
     if (check_loadcmd(cd, &cd->umon_read_buffer[cd->umon_read_pos], ret))
       return;
@@ -660,7 +639,7 @@ void read_from_socket(comms_details_type *cd)
 
     while (p)
     {
-      printf("find_next_cmd p = %08X\n", (unsigned int)p);
+      DEBUG("UARTMON: find_next_cmd p = %08X\n", (unsigned int)p);
       cd->umon_echo = 1;
       echo_command(cd, p, ret);
 
