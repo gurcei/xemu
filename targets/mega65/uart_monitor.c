@@ -249,6 +249,10 @@ static void execute_command ( comms_details_type *cd, char *cmd )
 			cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFF);
 			m65mon_set_pc(par1);
 			break;
+    case 'w':
+      cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFFFFF);
+      if (cmd && check_end_of_command(cmd, 1))
+        m65mon_watchpoint(par1);
 #ifdef TRACE_NEXT_SUPPORT
 		case 'N':
 			m65mon_next_command();

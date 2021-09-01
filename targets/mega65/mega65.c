@@ -59,6 +59,8 @@ static int emulation_is_running = 0;
 static int speed_current = -1;
 static int paused = 0, paused_old = 0;
 static int breakpoint_pc = -1;
+static int watchpoint_addr = -1;
+static int watchpoint_val = -1;
 #ifdef TRACE_NEXT_SUPPORT
 static int orig_sp = 0;
 static int trace_next_trigger = 0;
@@ -691,6 +693,16 @@ void m65mon_breakpoint ( int brk )
 	else
 		cpu_cycles_per_step = 0;
 }
+
+void m65mon_watchpoint ( int addr )
+{
+  watchpoint_addr = addr;
+  watchpoint_val = memory_debug_read_phys_addr(addr);
+	if (addr < 0)
+		cpu_cycles_per_step = cpu_cycles_per_scanline;
+	else
+		cpu_cycles_per_step = 0;
+}
 #endif
 
 
@@ -814,6 +826,14 @@ static void emulation_loop ( void )
 			m65mon_show_regs();
 			paused = 1;
 		}
+    if (watchpoint_addr != -1)
+    {
+      if (watchpoint_val != memory_debug_read_phys_addr(watchpoint_addr))
+      {
+        watchpoint_val = memory_debug_read_phys_addr(watchpoint_addr);
+        paused = 1;
+      }
+    }
 		cycles += XEMU_UNLIKELY(in_dma) ? dma_update_multi_steps(cpu_cycles_per_scanline) : cpu65_step(
 #ifdef CPU_STEP_MULTI_OPS
 			cpu_cycles_per_step
