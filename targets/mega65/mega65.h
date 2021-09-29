@@ -58,6 +58,7 @@ extern void m65mon_setmem28  ( int addr, int cnt, Uint8* vals );
 extern void m65mon_setpc(int addr);
 extern void m65mon_set_trace ( int m );
 extern void m65mon_do_trace  ( void );
+extern void show_last_few_pcs( void );
 #ifdef TRACE_NEXT_SUPPORT
 extern void m65mon_next_command ( void );
 #endif

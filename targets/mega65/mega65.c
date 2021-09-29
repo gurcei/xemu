@@ -753,12 +753,37 @@ static void update_emulator ( void )
 	update_emulated_time_sources();
 }
 
+int first_entry = 1;
+
+int oldpc[10] = { 0 };
+int oldpcidx = 0;
+void show_last_few_pcs(void)
+{
+  static char s[16];
+  for (int k = 0; k < 10; k++)
+  {
+    sprintf(s, "pc[%02d] = %08X\n", k, oldpc[ (oldpcidx+10-k) % 10]);
+		umon_printf(s);
+  }
+}
 
 static void emulation_loop ( void )
 {
 	static int cycles = 0;	// used for "balance" CPU cycles per scanline, must be static!
 	xemu_window_snap_to_optimal_size(0);
 	vic4_open_frame_access();
+
+  if (cpu65.pc != oldpc[oldpcidx])
+  {
+    oldpcidx = (oldpcidx + 1) % 10;
+    oldpc[oldpcidx] = cpu65.pc;
+  }
+
+	if (first_entry)
+	{
+		first_entry = 0;
+		// paused = 1;
+	}
 	// video standard (PAL/NTSC) affects the "CPU cycles per scanline" variable, which is used in this main emulation loop below.
 	// thus, if vic-4 emulation set videostd_changed, we should react with enforce a re-calibration.
 	// videostd_changed is set by vic4_open_frame_access() in vic4.c, thus we do here right after calling it.

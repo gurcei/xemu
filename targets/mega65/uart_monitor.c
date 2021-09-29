@@ -253,11 +253,15 @@ static void execute_command ( comms_details_type *cd, char *cmd )
       cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFFFFF);
       if (cmd && check_end_of_command(cmd, 1))
         m65mon_watchpoint(par1);
+      break;
 #ifdef TRACE_NEXT_SUPPORT
 		case 'N':
 			m65mon_next_command();
 			break;
 #endif
+    case 'z':
+      show_last_few_pcs();
+      break;
 		case 0:
 			m65mon_empty_command();	// emulator can use this, if it wants
 			break;
