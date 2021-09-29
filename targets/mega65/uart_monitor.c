@@ -38,16 +38,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 #define UNCONNECTED	XS_INVALID_SOCKET
 
 #define UMON_WRITE_BUFFER_SIZE	0x10000
-#define umon_printf(...)	do { \
-  for (int idx = 0; idx < MAXPORTS; idx++) { \
-    if (comdet[idx].sock_server != UNCONNECTED) { \
-					if (XEMU_LIKELY(comdet[idx].umon_write_size < UMON_WRITE_BUFFER_SIZE - 1)) \
-						comdet[idx].umon_write_size += snprintf(comdet[idx].umon_write_buffer + comdet[idx].umon_write_size, UMON_WRITE_BUFFER_SIZE - comdet[idx].umon_write_size, __VA_ARGS__); \
-					else \
-						_umon_write_size_panic(&comdet[idx]); \
-    } \
-  } \
-				} while(0)
 #define UMON_SYNTAX_ERROR	"?SYNTAX ERROR  "
 #define PRINTF_SOCK	PRINTF_S64
 
@@ -407,6 +397,9 @@ static void execute_command ( comms_details_type *cd, char *cmd )
 			m65mon_next_command();
 			break;
 #endif
+    case 'z':
+      show_last_few_pcs();
+      break;
 		case 0:
 			m65mon_empty_command();	// emulator can use this, if it wants
 			break;
@@ -643,6 +636,17 @@ int connect_unix_socket(comms_details_type *cd)
 		}
 	}
 	return 0;
+}
+
+void umon_printf(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	for (int idx = 0; idx < MAXPORTS; idx++)
+		if (comdet[idx].sock_server != UNCONNECTED)
+			comdet[idx].umon_write_size += vsprintf(comdet[idx].umon_write_buffer + comdet[idx].umon_write_size, format, args);
+
+	va_end(args);
 }
 
 void write_hypervisor_byte(char byte)
