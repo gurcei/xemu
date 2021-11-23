@@ -817,6 +817,8 @@ static XEMU_INLINE void _RORQ_Q ( void ) {
  *                    CPU EMULATION, OPCODE DECODING + RUN                  *
  * ------------------------------------------------------------------------ */
 
+void add_loc(Uint16 pc);
+int found_flag = 0;
 
 int cpu65_step (
 #ifdef CPU_STEP_MULTI_OPS
@@ -828,6 +830,11 @@ int cpu65_step (
 #ifdef CPU_STEP_MULTI_OPS
 	int all_cycles = 0;
 	do {
+    //if (CPU65.op == 0x20)	// jsr
+    if (!found_flag)
+      add_loc(CPU65.pc);
+    if (CPU65.pc == 0x2BFC)
+      found_flag = 1;
 #endif
 	if (XEMU_UNLIKELY(CPU65.nmiEdge
 #ifdef CPU_65CE02

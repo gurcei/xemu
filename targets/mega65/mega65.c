@@ -755,15 +755,25 @@ static void update_emulator ( void )
 
 int first_entry = 1;
 
-int oldpc[10] = { 0 };
+#define PCCNT 400
+int oldpc[PCCNT] = { 0 };
 int oldpcidx = 0;
 void show_last_few_pcs(void)
 {
   static char s[16];
-  for (int k = 0; k < 10; k++)
+  for (int k = 0; k < PCCNT; k++)
   {
-    sprintf(s, "pc[%02d] = %08X\n", k, oldpc[ (oldpcidx+10-k) % 10]);
+    sprintf(s, "%08X\n", oldpc[ (oldpcidx+PCCNT-k) % PCCNT]);
 		umon_printf(s);
+  }
+}
+
+void add_loc(Uint16 pc)
+{
+  if (pc != oldpc[oldpcidx] && !paused)
+  {
+    oldpcidx = (oldpcidx + 1) % PCCNT;
+    oldpc[oldpcidx] = pc;
   }
 }
 
@@ -772,12 +782,6 @@ static void emulation_loop ( void )
 	static int cycles = 0;	// used for "balance" CPU cycles per scanline, must be static!
 	xemu_window_snap_to_optimal_size(0);
 	vic4_open_frame_access();
-
-  if (cpu65.pc != oldpc[oldpcidx])
-  {
-    oldpcidx = (oldpcidx + 1) % 10;
-    oldpc[oldpcidx] = cpu65.pc;
-  }
 
 	if (first_entry)
 	{
@@ -790,6 +794,7 @@ static void emulation_loop ( void )
 	// machine_set_speed() will react to videostd_changed flag, so it's just enough to call it from here
 	machine_set_speed(0);
 	for (;;) {
+
 #ifdef TRACE_NEXT_SUPPORT
 		if (trace_next_trigger == 2) {
 			if (cpu65.op == 0x20) {		// was the current opcode a JSR $nnnn ? (0x20)
@@ -846,7 +851,17 @@ static void emulation_loop ( void )
 		}
 		if (XEMU_UNLIKELY(hypervisor_is_debugged && in_hypervisor))
 			hypervisor_debug();
+    if (XEMU_UNLIKELY(cpu65.op == 0x5c && breakpoint_pc == 0xffff)) {
+			m65mon_show_regs();
+			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
+			paused = 1;
+    }
 		if (XEMU_UNLIKELY(breakpoint_pc == cpu65.pc)) {
+			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
+			m65mon_show_regs();
+			paused = 1;
+    }
+    if (XEMU_UNLIKELY(cpu65.pc == 0x2F1B)) {
 			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
 			m65mon_show_regs();
 			paused = 1;
