@@ -733,21 +733,21 @@ static void emulation_loop ( void )
 		if (XEMU_UNLIKELY(hypervisor_is_debugged && in_hypervisor))
 			hypervisor_debug();
 #ifdef		HAS_UARTMON_SUPPORT
-    if (XEMU_UNLIKELY(cpu65.op == 0x5c && breakpoint_pc == 0xffff)) {
+		if (XEMU_UNLIKELY(cpu65.op == 0x5c && breakpoint_pc == 0xffff)) {
 			m65mon_show_regs();
 			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
 			paused = 1;
-    }
+		}
 		if (XEMU_UNLIKELY(breakpoint_pc == cpu65.pc)) {
 			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
 			m65mon_show_regs();
 			paused = 1;
-    }
-    if (XEMU_UNLIKELY(cpu65.pc == 0x2F1B)) {
-			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
-			m65mon_show_regs();
-			paused = 1;
-		}
+    	}
+//    	if (XEMU_UNLIKELY(cpu65.pc == 0x2F1B)) {
+//			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
+//			m65mon_show_regs();
+//			paused = 1;
+//		}
 		if (watchpoint_addr != -1)
 		{
 			if (watchpoint_val != debug_read_linear_byte(watchpoint_addr))
