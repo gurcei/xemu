@@ -861,11 +861,11 @@ static void emulation_loop ( void )
 			m65mon_show_regs();
 			paused = 1;
     }
-    if (XEMU_UNLIKELY(cpu65.pc == 0x2F1B)) {
-			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
-			m65mon_show_regs();
-			paused = 1;
-		}
+//    if (XEMU_UNLIKELY(cpu65.pc == 0x2F1B)) {
+//			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
+//			m65mon_show_regs();
+//			paused = 1;
+//		}
     if (watchpoint_addr != -1)
     {
       if (watchpoint_val != memory_debug_read_phys_addr(watchpoint_addr))
