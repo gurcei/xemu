@@ -139,6 +139,25 @@ static int check_end_of_command ( char *p, int error_out )
 	return 1;
 }
 
+static void fillmem28 ( char *param, int addr )
+{
+	char *orig_param = param;
+  int endaddr;
+  int val;
+
+	if (param && !check_end_of_command(param, 0))
+    param = parse_hex_arg(param, &endaddr, 0, 0xFFFFFFF);
+  else
+    return;
+
+	if (param && !check_end_of_command(param, 0))
+    param = parse_hex_arg(param, &val, 0, 0xFF);
+  else
+    return;
+
+  for (int k = addr; k < endaddr; k++)
+    m65mon_setmem28(k & 0xFFFFFFF, 1, (Uint8*)&val);
+}
 
 static void setmem28 ( char *param, int addr )
 {
@@ -218,6 +237,10 @@ static void execute_command ( comms_details_type *cd, char *cmd )
 			cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFFFFF);
 			setmem28(cmd, par1);
 			break;
+    case 'f':
+      cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFFFFF);
+      fillmem28(cmd, par1);
+      break;
 		case 'l':
 			cd->loadcmdflag = 1;
 			cmd = parse_hex_arg(cmd, &cd->loadcmdcurraddr, 0, 0xFFFFFFF);
