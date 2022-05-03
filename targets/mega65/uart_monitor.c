@@ -517,8 +517,14 @@ void umon_printf(const char* format, ...)
 	va_list args;
 	va_start(args, format);
 	for (int idx = 0; idx < MAXPORTS; idx++)
-		if (comdet[idx].sock_server != UNCONNECTED)
+		if (comdet[idx].sock_server != UNCONNECTED && comdet[idx].sock_client != UNCONNECTED) {
 			comdet[idx].umon_write_size += vsprintf(comdet[idx].umon_write_buffer + comdet[idx].umon_write_size, format, args);
+
+			// printf("[%d]umon_write_size=$%08X\n", idx, comdet[idx].umon_write_size);
+			if (comdet[idx].umon_write_size >= UMON_WRITE_BUFFER_SIZE) {
+				FATAL("FATAL: Exhausted umon write buffer! (consider increasing UMON_WRITE_BUFFER_SIZE in uart_monitor.h)");
+			}
+		}
 
 	va_end(args);
 }
