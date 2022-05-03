@@ -201,6 +201,9 @@ static void execute_command ( comms_details_type *cd, char *cmd )
 		*(p--) = 0;
 	DEBUG("UARTMON: command got \"%s\" (%d bytes)." NL, cmd, (int)strlen(cmd));
 	switch (*(cmd++)) {
+		case '!':
+			reset_mega65();
+            break;
 		case 'h':
 		case 'H':
 		case '?':
