@@ -104,7 +104,9 @@ void hypervisor_enter_via_write_trap ( int trapno )
 		}
 		return;
 	}
-	static int do_nop_check = 1;
+  // TODO: add a cmdline arg to allow disabling of nop-check
+  // (this will be handy when running xemu headless)
+	static int do_nop_check = 0;
 	if (do_nop_check) {
 		// FIXME: for real there should be a memory reading function independent to the one used by the CPU, since
 		// this has some side effects to just fetch a byte to check something, which is otherwise used normally to fetch CPU opcodes and such
