@@ -856,6 +856,11 @@ static void emulation_loop ( void )
 			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
 			paused = 1;
     }
+    if (XEMU_UNLIKELY(cpu65.op == 0x00 && breakpoint_pc == 0xfffe)) {
+			m65mon_show_regs();
+			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
+			paused = 1;
+    }
 		if (XEMU_UNLIKELY(breakpoint_pc == cpu65.pc)) {
 			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
 			m65mon_show_regs();
