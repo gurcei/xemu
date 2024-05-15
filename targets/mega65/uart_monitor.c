@@ -201,9 +201,6 @@ static void execute_command ( comms_details_type *cd, char *cmd )
 		*(p--) = 0;
 	DEBUG("UARTMON: command got \"%s\" (%d bytes)." NL, cmd, (int)strlen(cmd));
 	switch (*(cmd++)) {
-		case '!':
-			reset_mega65();
-            break;
 		case 'h':
 		case 'H':
 		case '?':
@@ -250,10 +247,6 @@ static void execute_command ( comms_details_type *cd, char *cmd )
 			cmd = parse_hex_arg(cmd, &cd->loadcmdcurraddr, 0, 0xFFFFFFF);
 			cmd = parse_hex_arg(cmd, &cd->loadcmdendaddr, 0, 0xFFFF);
 			cd->loadcmdendaddr += (cd->loadcmdcurraddr & 0xFFF0000);
-			break;
-		case 'g':
-			cmd = parse_hex_arg(cmd, &par1, 0, 0xFFFF);
-			m65mon_setpc(par1);
 			break;
 		case 't':
 			if (!*cmd)
