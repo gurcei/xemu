@@ -95,7 +95,6 @@ void cpu65_illegal_opcode_callback ( void )
 #define C128_SPEED_BIT_BUG 1
 //#define C128_SPEED_BIT_BUG 0
 
-
 void machine_set_speed ( int verbose )
 {
 	int speed_wanted;
@@ -153,6 +152,23 @@ void machine_set_speed ( int verbose )
 			cpu_cycles_per_step = cpu_cycles_per_scanline;	// if in trace mode (or hyper-debug ...), do not set this! So set only if non-trace and non-hyper-debug
 	}
 }
+
+extern int videostd_changed;
+
+int toggle_fastclock(void)
+{
+	int ret;
+	if (configdb.fast_mhz != 200) {
+		configdb.fast_mhz = 200;
+		ret = 1;
+	} else {
+		configdb.fast_mhz = 40.5;
+		ret = 0;
+	}
+	videostd_changed = 1;
+	return ret;
+}
+
 
 
 int mega65_set_model ( const Uint8 id )
@@ -630,6 +646,12 @@ void m65mon_setmem28 ( int addr, int cnt, Uint8* vals )
 {
 	while (--cnt >= 0)
 		memory_debug_write_phys_addr(addr++, *(vals++));
+}
+
+void m65mon_setmem ( int addr, int cnt, Uint8* vals )
+{
+  while (--cnt >= 0)
+    memory_debug_write_cpu_addr(addr++, *(vals++));
 }
 
 void m65mon_setpc(int addr)

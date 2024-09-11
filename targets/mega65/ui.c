@@ -448,6 +448,14 @@ static void ui_cb_start_umon ( const struct menu_st *m, int *query )
 }
 #endif
 
+int is_fastclock_mode = 1;
+int toggle_fastclock();
+static void ui_cb_toggle_fastclock( const struct menu_st *m, int *query )
+{
+	XEMUGUI_RETURN_CHECKED_ON_QUERY(query, is_fastclock_mode);
+	is_fastclock_mode = toggle_fastclock();
+}
+
 static void ui_cb_matrix_mode ( const struct menu_st *m, int *query )
 {
 	XEMUGUI_RETURN_CHECKED_ON_QUERY(query, in_the_matrix);
@@ -883,6 +891,9 @@ static const struct menu_st menu_debug[] = {
 					XEMUGUI_MENUID_CALLABLE |
 					XEMUGUI_MENUFLAG_QUERYBACK,	ui_cb_start_umon, NULL },
 #endif
+	{ "Toggle fastclock",
+					XEMUGUI_MENUID_CALLABLE |
+					XEMUGUI_MENUFLAG_QUERYBACK,	ui_cb_toggle_fastclock, NULL },
 #ifdef XEMU_ARCH_WIN
 	{ "System console",		XEMUGUI_MENUID_CALLABLE |
 					XEMUGUI_MENUFLAG_QUERYBACK,	xemugui_cb_sysconsole, NULL },

@@ -173,7 +173,10 @@ static void setmem28 ( char *param, int addr )
 	for (int idx = 0; idx < cnt; idx++) {
 		int val;
 		param = parse_hex_arg(param, &val, 0, 0xFF);
-		m65mon_setmem28(addr & 0xFFFFFFF, 1, (Uint8*)&val);
+    if ((addr >> 16) != 0x777)
+      m65mon_setmem28(addr & 0xFFFFFFF, 1, (Uint8*)&val);
+    else
+      m65mon_setmem(addr & 0xFFFFFFFF, 1, (Uint8*)&val);
 		addr++;
 	}
 }
