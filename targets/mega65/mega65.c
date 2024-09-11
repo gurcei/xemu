@@ -89,7 +89,6 @@ void cpu65_illegal_opcode_callback ( void )
 #define C128_SPEED_BIT_BUG 1
 //#define C128_SPEED_BIT_BUG 0
 
-
 void machine_set_speed ( int verbose )
 {
 	int speed_wanted;
@@ -157,6 +156,23 @@ void window_title_pre_update_callback ( void )
 	);
 	window_title_custom_addon = paused ? "TRACE/PAUSE" : NULL;
 }
+
+extern int videostd_changed;
+
+int toggle_fastclock(void)
+{
+	int ret;
+	if (configdb.fast_mhz != 200) {
+		configdb.fast_mhz = 200;
+		ret = 1;
+	} else {
+		configdb.fast_mhz = 40.5;
+		ret = 0;
+	}
+	videostd_changed = 1;
+	return ret;
+}
+
 
 
 int mega65_set_model ( const Uint8 id )
