@@ -873,12 +873,20 @@ static void emulation_loop ( void )
 		}
 		if (XEMU_UNLIKELY(hypervisor_is_debugged && in_hypervisor))
 			hypervisor_debug();
+    // break on MAP instruction
     if (XEMU_UNLIKELY(cpu65.op == 0x5c && breakpoint_pc == 0xffff)) {
 			m65mon_show_regs();
 			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
 			paused = 1;
     }
+    // break on BRK instruction
     if (XEMU_UNLIKELY(cpu65.op == 0x00 && breakpoint_pc == 0xfffe)) {
+			m65mon_show_regs();
+			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
+			paused = 1;
+    }
+    // break on RTI instruction
+    if (XEMU_UNLIKELY(cpu65.op == 0x40 && breakpoint_pc == 0xfffd)) {
 			m65mon_show_regs();
 			DEBUGPRINT("TRACE: Breakpoint @ $%04X hit, Xemu moves to trace mode after the execution of this opcode." NL, cpu65.pc);
 			paused = 1;
