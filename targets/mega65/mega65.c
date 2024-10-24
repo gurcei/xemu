@@ -668,7 +668,7 @@ void m65mon_set_trace ( int m )
 void m65mon_do_next ( void )
 {
 	if (paused) {
-		umon_send_ok = 0;			// delay command execution!
+		set_umon_send_ok(0);			// delay command execution!
 		m65mon_callback = m65mon_show_regs;	// register callback
 		trace_next_trigger = 2;			// if JSR, then trigger until RTS to next_addr
 		orig_sp = cpu65.sphi | cpu65.s;
