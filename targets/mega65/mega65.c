@@ -62,8 +62,8 @@ static int paused_old = 0;
 extern int watchpoint_addr;
 extern int watchpoint_val;
 #ifdef TRACE_NEXT_SUPPORT
-static int orig_sp = 0;
-static int trace_next_trigger = 0;
+int orig_sp = 0;
+int trace_next_trigger = 0;
 #endif
 int trace_step_trigger = 0;
 static char emulator_speed_title[64] = "";
