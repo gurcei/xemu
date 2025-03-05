@@ -287,7 +287,7 @@ static Uint8 undecoded_reader ( const Uint32 addr32 )
 	char msg[128];
 	sprintf(msg, "Unhandled memory read operation for linear address $%X (PC=$%04X)", addr32, cpu65.old_pc);
 	if (skip_unhandled_mem <= 1)
-		skip_unhandled_mem = QUESTION_WINDOW("EXIT|Ignore now|Ignore all|Silent ignore all", msg);
+		skip_unhandled_mem = QUESTION_WINDOW("EXIT|Ignore now|Ignore all|Silent ignore all|Pause CPU", msg);
 	switch (skip_unhandled_mem) {
 		case 0:
 			XEMUEXIT(1);
@@ -295,6 +295,9 @@ static Uint8 undecoded_reader ( const Uint32 addr32 )
 		case 1:
 		case 2:
 			DEBUGPRINT("WARNING: %s" NL, msg);
+			break;
+		case 4:
+			paused = 1;
 			break;
 		default:
 			DEBUG("WARNING: %s" NL, msg);
@@ -308,7 +311,7 @@ static void undecoded_writer ( const Uint32 addr32, const Uint8 data )
 	char msg[128];
 	sprintf(msg, "Unhandled memory write operation for linear address $%X (PC=$%04X)", addr32, cpu65.old_pc);
 	if (skip_unhandled_mem <= 1)
-		skip_unhandled_mem = QUESTION_WINDOW("EXIT|Ignore now|Ignore all|Silent ignore all", msg);
+		skip_unhandled_mem = QUESTION_WINDOW("EXIT|Ignore now|Ignore all|Silent ignore all|Pause CPU", msg);
 	switch (skip_unhandled_mem) {
 		case 0:
 			XEMUEXIT(1);
@@ -316,6 +319,9 @@ static void undecoded_writer ( const Uint32 addr32, const Uint8 data )
 		case 1:
 		case 2:
 			DEBUGPRINT("WARNING: %s" NL, msg);
+			break;
+		case 4:
+			paused = 1;
 			break;
 		default:
 			DEBUG("WARNING: %s" NL, msg);
