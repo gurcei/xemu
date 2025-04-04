@@ -650,9 +650,24 @@ static void update_emulator ( void )
 
 int first_entry = 1;
 
-#define PCCNT 400
+#define PCCNT 2400
 int oldpc[PCCNT] = { 0 };
 int oldpcidx = 0;
+bool saveflag = false;
+FILE* flsave = NULL;
+
+void start_saving(void)
+{
+	if (!saveflag) {
+		saveflag = true;
+		flsave = fopen("out.txt", "wt");
+	}
+	else {
+		fclose(flsave);
+		saveflag = false;
+	}
+}
+
 void show_last_few_pcs(void)
 {
   static char s[16];
@@ -665,6 +680,14 @@ void show_last_few_pcs(void)
 
 void add_loc(Uint16 pc)
 {
+	if (saveflag) {
+		char str[16];
+		sprintf(str, "%08X - TMRA = $%04X\n", pc,
+				cia_read(&cia2, 4) + cia_read(&cia2, 5)*256);
+				//debug_read_linear_byte(0xffd3d04) + debug_read_linear_byte(0xffd3d05)*256);
+		fprintf(flsave, str);
+	}
+
   if (pc != oldpc[oldpcidx] && !paused)
   {
     oldpcidx = (oldpcidx + 1) % PCCNT;

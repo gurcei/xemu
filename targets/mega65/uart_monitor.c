@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 #define UNCONNECTED	XS_INVALID_SOCKET
 
-#define UMON_WRITE_BUFFER_SIZE	0x10000
+#define UMON_WRITE_BUFFER_SIZE	0x40000
 #define UMON_SYNTAX_ERROR	"?SYNTAX ERROR  "
 #define PRINTF_SOCK	PRINTF_S64
 
@@ -400,6 +400,9 @@ static void execute_command ( comms_details_type *cd, char *cmd )
     case 'z':
       show_last_few_pcs();
       break;
+		case 'Z':
+			start_saving();
+			break;
 		case 0:
 			m65mon_empty_command();	// emulator can use this, if it wants
 			break;

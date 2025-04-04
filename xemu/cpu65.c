@@ -863,7 +863,10 @@ static XEMU_INLINE void _NEGQ_Q ( void ) {
  * ------------------------------------------------------------------------ */
 
 void add_loc(Uint16 pc);
-int found_flag = 0;
+
+#ifdef USE_FOUND_FLAG	// I use this technique to set a point to stop keeping a trace of pc's for 'z' command
+// int found_flag = 0;
+#endif
 
 int cpu65_step (
 #ifdef CPU_STEP_MULTI_OPS
@@ -873,13 +876,19 @@ int cpu65_step (
 #endif
 ) {
 #ifdef CPU_STEP_MULTI_OPS
+
 	int all_cycles = 0;
 	do {
     //if (CPU65.op == 0x20)	// jsr
+#ifdef USE_FOUND_FLAG
     if (!found_flag)
+#endif
       add_loc(CPU65.pc);
+#ifdef USE_FOUND_FLAG
     if (CPU65.pc == 0x2BFC)
       found_flag = 1;
+#endif
+
 #endif
 	if (XEMU_UNLIKELY(CPU65.nmiEdge
 #ifdef CPU_65CE02
