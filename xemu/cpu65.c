@@ -863,6 +863,7 @@ static XEMU_INLINE void _NEGQ_Q ( void ) {
  * ------------------------------------------------------------------------ */
 
 void add_loc(Uint16 pc);
+extern int paused;
 
 #ifdef USE_FOUND_FLAG	// I use this technique to set a point to stop keeping a trace of pc's for 'z' command
 // int found_flag = 0;
@@ -2852,6 +2853,10 @@ do_not_clear_prefix:
 		CPU65.multi_step_stop_trigger = 0;
 		return all_cycles;
 	}
+
+	if (paused)
+	  break;
+
 	} while (all_cycles < run_for_cycles);
 	return all_cycles;
 #else
