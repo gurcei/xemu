@@ -79,6 +79,8 @@ CPU_CUSTOM_FUNCTIONS_INLINE_DECORATOR Uint8 cpu65_read_callback  ( const Uint16 
 	return mem_slot_rd_func[ref_slot](mem_slot_rd_addr32[ref_slot] + (addr16 & 0xFFU));
 }
 
+extern int paused;
+
 CPU_CUSTOM_FUNCTIONS_INLINE_DECORATOR void  cpu65_write_callback ( const Uint16 addr16, const Uint8 data )
 {
 #ifdef	MEM_USE_DATA_POINTERS
@@ -88,6 +90,11 @@ CPU_CUSTOM_FUNCTIONS_INLINE_DECORATOR void  cpu65_write_callback ( const Uint16 
 		return;
 	}
 #endif
+	/*
+	if (addr16 == 0xd600)
+	  paused = 1;
+	  */
+
 	ref_slot = addr16 >> 8;
 	mem_slot_wr_func[ref_slot](mem_slot_wr_addr32[ref_slot] + (addr16 & 0xFFU), data);
 }

@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 // Do not enable DAT support, MEGA65 does not implement this, I shouldn't either ... [maybe enabled in the future when/if mega65-core supports it?]
 // #define ENABLE_DAT_SUPPORT
 
+// #define PAUSE_ON_SCREEN_RESOLUTION_CHANGE
 
 const char *iomode_names[4] = { "VIC2", "VIC3", "VIC4ETH", "VIC4" };
 const Uint8 iomode_hexdigitids[4] = { 2, 3, 0xE, 4 };	// identifier of IO modes uses with %X (hex digit print format), will result "E" when IO mode is VIC4-ETH, "E" meaning "Ethernet"
@@ -618,6 +619,7 @@ static const char vic_registers_internal_mode_names[] = {'4', '3', '2'};
 #define CASE_VIC_ALL(n)	CASE_VIC_2(n): CASE_VIC_3(n): CASE_VIC_4(n)
 #define CASE_VIC_3_4(n)	CASE_VIC_3(n): CASE_VIC_4(n)
 
+extern int paused;
 
 /* - If HOTREG register is enabled, VIC4 will trigger recalculation of border and such on next raster,
      on any "legacy" register write. For the VIC4 such "hot" registers are:
@@ -748,6 +750,14 @@ void vic_write_reg ( unsigned int addr, Uint8 data )
 			//if ((vic_registers[0x31] & 0xBF) ^ (data & 0xBF))
 			//    vic_hotreg_touched = 1;
 			vic_hotreg_touched = 1;
+
+		// dummy code to only pause if H640 or V400 are touched
+#ifdef PAUSE_ON_SCREEN_RESOLUTION_CHANGE
+		if ( (vic_registers[0x31] & 0x80) != (data & 0x80) )
+		  paused = 1;
+		if ( (vic_registers[0x31] & 0x08) != (data & 0x08) )
+		  paused = 1;
+#endif
 			vic_registers[0x31] = data;	// we need this work-around, since reg-write happens _after_ this switch statement, but machine_set_speed above needs it ...
 			machine_set_speed(0);
 			calculate_char_x_step();
