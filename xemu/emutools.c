@@ -451,6 +451,19 @@ static inline void do_sleep ( int td )
 #endif
 }
 
+void update_title(void)
+{
+#ifdef		WINDOW_TITLE_PRE_UPDATE_CALLBACK
+		WINDOW_TITLE_PRE_UPDATE_CALLBACK();
+#endif
+		snprintf(window_title_buffer_end, 64, "  [%d%% %d%%] %s %s",
+			((td_em_ALL < td_pc_ALL) && td_pc_ALL) ? td_em_ALL * 100 / td_pc_ALL : 100,
+			td_em_ALL ? (td_pc_ALL * 100 / td_em_ALL) : -1,
+			window_title_custom_addon ? window_title_custom_addon : "running",
+			window_title_info_addon ? window_title_info_addon : ""
+		);
+		SDL_SetWindowTitle(sdl_win, window_title_buffer);
+}
 
 /* Should be called regularly (eg on each screen global update), this function
    tries to keep the emulation speed near to real-time of the emulated machine.
@@ -478,16 +491,7 @@ void xemu_timekeeping_delay ( int td_em )
 	td = get_elapsed_time(et_new, &et_old, &unix_time_tv);
 	seconds_timer_trigger = (unix_time_tv.tv_sec != old_unix_time);
 	if (seconds_timer_trigger) {
-#ifdef		WINDOW_TITLE_PRE_UPDATE_CALLBACK
-		WINDOW_TITLE_PRE_UPDATE_CALLBACK();
-#endif
-		snprintf(window_title_buffer_end, 64, "  [%d%% %d%%] %s %s",
-			((td_em_ALL < td_pc_ALL) && td_pc_ALL) ? td_em_ALL * 100 / td_pc_ALL : 100,
-			td_em_ALL ? (td_pc_ALL * 100 / td_em_ALL) : -1,
-			window_title_custom_addon ? window_title_custom_addon : "running",
-			window_title_info_addon ? window_title_info_addon : ""
-		);
-		SDL_SetWindowTitle(sdl_win, window_title_buffer);
+    update_title();
 		td_pc_ALL = td_pc;
 		td_em_ALL = td_em;
 	} else {

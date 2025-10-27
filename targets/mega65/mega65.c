@@ -159,6 +159,8 @@ void window_title_pre_update_callback ( void )
 
 extern int videostd_changed;
 
+void update_title(void);
+
 int toggle_fastclock(void)
 {
 	int ret;
@@ -169,7 +171,10 @@ int toggle_fastclock(void)
 		configdb.fast_mhz = 40.5;
 		ret = 0;
 	}
+	sprintf(fast_mhz_as_string, "%.2fMHz", configdb.fast_mhz);
 	videostd_changed = 1;
+	machine_set_speed ( 0 );
+  update_title();
 	return ret;
 }
 

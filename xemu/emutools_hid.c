@@ -593,6 +593,10 @@ int hid_handle_one_sdl_event ( SDL_Event *event )
 			break;
 		case SDL_KEYUP:
 		case SDL_KEYDOWN:
+			if (event->type == SDL_KEYDOWN && event->key.keysym.mod & KMOD_CTRL && event->key.keysym.sym == SDLK_BACKQUOTE) {
+				toggle_fastclock();
+				break;
+			}
 #ifdef XEMU_ARCH_ANDROID
 			if (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_AC_BACK) {	// Android "back" button
 				osk_show(!osk_status());
