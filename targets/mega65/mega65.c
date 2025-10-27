@@ -751,7 +751,6 @@ static void emulation_loop ( void )
 			if (trace_step_trigger) {
 				// if monitor triggers a step, break the pause loop, however we will get back the control on the next
 				// iteration of the infinite "for" loop, as "paused" is not altered
-				trace_step_trigger = 0;
 				break;	// break the pause loop now
 			}
 			// If "paused" mode is switched off ie by a monitor command (called from update_emulator() above!)
@@ -814,11 +813,20 @@ static void emulation_loop ( void )
 			}
 		}
 #endif
+		if (trace_step_trigger)
+		  paused = 0;
+
 		cycles += XEMU_UNLIKELY(in_dma) ? dma_update_multi_steps(cpu_cycles_per_scanline) : cpu65_step(
 #ifdef CPU_STEP_MULTI_OPS
 			cpu_cycles_per_step
 #endif
 		);	// FIXME: this is maybe not correct, that DMA's speed depends on the fast/slow clock as well?
+
+		if (trace_step_trigger) {
+		  trace_step_trigger = 0;
+		  paused = 1;
+		}
+
 		if (cycles >= cpu_cycles_per_scanline) {
 			cycles -= cpu_cycles_per_scanline;
 			cia_tick(&cia1, 32);	// FIXME: why 32?????? why fixed????? what should be the CIA "tick" frequency for real? Is it dependent on NTSC/PAL?
