@@ -43,6 +43,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 extern Uint32 ref_slot;
 
+extern int paused;
+extern int watchpoint_addr;
+
 typedef Uint8 (*mem_slot_rd_func_t)(const Uint32 addr32);
 typedef void  (*mem_slot_wr_func_t)(const Uint32 addr32, const Uint8 data);
 
@@ -70,6 +73,10 @@ extern Uint32 memory_cpu_addr_to_linear ( const Uint16 cpu_addr, Uint32 *wr_addr
 
 CPU_CUSTOM_FUNCTIONS_INLINE_DECORATOR Uint8 cpu65_read_callback  ( const Uint16 addr16 )
 {
+	if (watchpoint_addr == addr16)
+	{
+	  paused = 1;
+	}
 #ifdef	MEM_USE_DATA_POINTERS
 	register const Uint8 *p = mem_slot_rd_data[addr16 >> 8];
 	if (MEM_DATA_POINTER_HINTING_STRENGTH(p))
