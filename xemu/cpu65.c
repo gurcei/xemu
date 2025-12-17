@@ -2281,6 +2281,13 @@ int cpu65_step (
 			CPU65.pf_v = 0;
 			break;
 	case 0xB9:	/* LDA Absolute,Y */
+#ifdef MEGA65
+			if (IS_NEG_NEG_OP()) {		// MEGA65-QOP: LDQ $nnnn
+				CPU65.op_cycles = MEGA_FOP_NEG_NEG_AD_CYCLES;
+				SET_NZ32(AXYZ_SET(readQuad(_absy())));
+				break;
+			}
+#endif
 			SET_NZ(CPU65.a = readByte(_absy()));
 			break;
 	case 0xBA:	/* TSX Implied */
