@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 #error "Android builds needs XEMU_OSK_SUPPORT to be enabled."
 #endif
 
+extern int toggle_fastclock(void);
+
 
 /* Note: HID stands for "Human Input Devices" or something like that :)
    That is: keyboard, joystick, mouse.
