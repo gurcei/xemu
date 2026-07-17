@@ -130,4 +130,6 @@ extern struct configdb_st configdb;
 
 extern void configdb_define_emulator_options ( size_t size );
 
+void enable_mouse_emulation(void);
+
 #endif

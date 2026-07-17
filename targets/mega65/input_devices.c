@@ -526,7 +526,7 @@ int emu_callback_key ( int pos, SDL_Scancode key, int pressed, int handled )
 			restore_is_held = 0;
 		if (pos == -2 && key == 0) {	// special case pos = -2, key = 0, handled = mouse button (which?) and release event!
 			if (handled == SDL_BUTTON_LEFT) {
-				if (configdb.nomouseemu) {
+				if (configdb.nomouseemu && allow_mouse_grab) {
 					OSD(-1, -1, "Mouse emulation is disabled.\nCannot enter mouse grab mode.");
 				} else {
 					if (set_mouse_grab(SDL_TRUE, 0)) {

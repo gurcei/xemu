@@ -178,6 +178,9 @@ void xemugui_cb_set_mouse_grab ( const struct menu_st *m, int *query )
 	XEMUGUI_RETURN_CHECKED_ON_QUERY(query, allow_mouse_grab);
 	allow_mouse_grab = !allow_mouse_grab;
 	static int first_warning = 1;
+	if (allow_mouse_grab) {
+		enable_mouse_emulation();
+	}
 	if (allow_mouse_grab && first_warning) {
 		first_warning = 0;
 		INFO_WINDOW("Mouse grab mode has been enabled.\nLeft click into the emulator window to initiate.\nPress both SHIFTs together to cancel.");

@@ -179,4 +179,14 @@ void configdb_define_emulator_options ( size_t size )
 	xemucfg_define_num_option_multi(num_options);
 	xemucfg_define_float_option_multi(float_options);
 	xemucfg_add_flags_to_options(do_not_save_opts, XEMUCFG_FLAG_NO_SAVE);
+
+	// GI: Enforce "no mouse emulation" by default, and only override this if user has
+	// user has specifically chosen immediate mouse emulation in their .cfg
+	configdb.nomouseemu = 1;
 }
+
+void enable_mouse_emulation(void)
+{
+	configdb.nomouseemu = 0;
+}
+
