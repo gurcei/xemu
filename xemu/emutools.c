@@ -33,6 +33,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 #	include <signal.h>
 #	include <sys/utsname.h>
 #endif
+#ifdef __APPLE__
+#	include <execinfo.h>
+#	include <dlfcn.h>
+#	include <mach-o/dyld.h>
+#endif
 
 #ifdef XEMU_MISSING_BIGGEST_ALIGNMENT_WORKAROUND
 #	warning "System did not define __BIGGEST_ALIGNMENT__ Xemu assumes some default value."
@@ -618,6 +623,102 @@ void xemu_get_timing_stat_string ( char *buf, unsigned int size )
 }
 
 
+#ifdef XEMU_ARCH_UNIX
+static void crash_handler(int sig)
+{
+	const char *sig_name;
+	switch (sig) {
+		case SIGSEGV: sig_name = "SIGSEGV (Segmentation Fault)"; break;
+		case SIGBUS:  sig_name = "SIGBUS (Bus Error)"; break;
+		case SIGABRT: sig_name = "SIGABRT (Abort)"; break;
+		case SIGILL:  sig_name = "SIGILL (Illegal Instruction)"; break;
+		case SIGFPE:  sig_name = "SIGFPE (Floating Point Exception)"; break;
+		default:      sig_name = "Unknown Signal"; break;
+	}
+	
+	fprintf(stderr, "\n" NL "*** CRASH DETECTED ***" NL);
+	fprintf(stderr, "Signal: %s (%d)" NL, sig_name, sig);
+	fprintf(stderr, "Attempting to print stack trace..." NL NL);
+	
+	if (debug_fp) {
+		fprintf(debug_fp, "\n" NL "*** CRASH DETECTED ***" NL);
+		fprintf(debug_fp, "Signal: %s (%d)" NL, sig_name, sig);
+		fprintf(debug_fp, "Attempting to print stack trace..." NL NL);
+	}
+	
+#ifdef __APPLE__
+	// Use backtrace() on macOS
+	void *callstack[128];
+	int i, frames = backtrace(callstack, 128);
+	char **symbols = backtrace_symbols(callstack, frames);
+	
+	if (symbols) {
+		fprintf(stderr, "Stack trace (%d frames):" NL, frames);
+		if (debug_fp)
+			fprintf(debug_fp, "Stack trace (%d frames):" NL, frames);
+		
+		// Get executable path for lldb suggestion
+		char exe_path[PATH_MAX + 1];
+		uint32_t exe_path_size = sizeof(exe_path);
+		if (_NSGetExecutablePath(exe_path, &exe_path_size) != 0) {
+			exe_path[0] = '\0';
+		}
+		
+		// Skip crash_handler frame (frame 0) and signal trampoline (frame 1)
+		int start_frame = 2;
+		int display_frame = 0;
+		
+		for (i = start_frame; i < frames; i++) {
+			fprintf(stderr, "  [%d] %s" NL, display_frame, symbols[i]);
+			if (debug_fp)
+				fprintf(debug_fp, "  [%d] %s" NL, display_frame, symbols[i]);
+			display_frame++;
+		}
+		
+		// Suggest using lldb for detailed backtrace
+		if (exe_path[0] != '\0') {
+			fprintf(stderr, NL "For detailed backtrace with source lines, run:" NL);
+			fprintf(stderr, "  lldb %s" NL, exe_path);
+			fprintf(stderr, "  (lldb) run [your arguments]" NL);
+			fprintf(stderr, "  (when it crashes, use: bt)" NL NL);
+			
+			if (debug_fp) {
+				fprintf(debug_fp, NL "For detailed backtrace with source lines, run:" NL);
+				fprintf(debug_fp, "  lldb %s" NL, exe_path);
+				fprintf(debug_fp, "  (lldb) run [your arguments]" NL);
+				fprintf(debug_fp, "  (when it crashes, use: bt)" NL NL);
+			}
+		}
+		
+		free(symbols);
+	} else {
+		fprintf(stderr, "Failed to get stack trace symbols" NL);
+		if (debug_fp)
+			fprintf(debug_fp, "Failed to get stack trace symbols" NL);
+	}
+#else
+	// For other Unix systems, try to use backtrace if available
+	// Otherwise, just print that we can't get a stack trace
+	fprintf(stderr, "Stack trace not available on this platform" NL);
+	fprintf(stderr, "Try running with: gdb/lldb %s" NL, xemu_initial_argv ? xemu_initial_argv[0] : "xmega65.native");
+	if (debug_fp) {
+		fprintf(debug_fp, "Stack trace not available on this platform" NL);
+		fprintf(debug_fp, "Try running with: gdb/lldb %s" NL, xemu_initial_argv ? xemu_initial_argv[0] : "xmega65.native");
+	}
+#endif
+	
+	fprintf(stderr, NL "*** END OF CRASH REPORT ***" NL NL);
+	if (debug_fp) {
+		fprintf(debug_fp, NL "*** END OF CRASH REPORT ***" NL NL);
+		fflush(debug_fp);
+	}
+	
+	// Restore default handler and re-raise signal
+	signal(sig, SIG_DFL);
+	raise(sig);
+}
+#endif
+
 static void shutdown_emulator ( void )
 {
 	DEBUG("XEMU: Shutdown callback function has been called." NL);
@@ -903,7 +1004,13 @@ void xemu_pre_init ( const char *app_organization, const char *app_name, const c
 #endif
 	// ignore SIGHUP, eg closing the terminal Xemu was started from ...
 	signal(SIGHUP, SIG_IGN);	// ignore SIGHUP, eg closing the terminal Xemu was started from ...
-#endif
+	// Install crash handlers for stack trace on segfault
+	signal(SIGSEGV, crash_handler);
+	signal(SIGBUS, crash_handler);
+	signal(SIGABRT, crash_handler);
+	signal(SIGILL, crash_handler);
+	signal(SIGFPE, crash_handler);
+#endif	// XEMU_ARCH_UNIX
 #ifdef XEMU_ARCH_HTML
 	if (chatty_xemu)
 		xemu_dump_version(stdout, slogan);
