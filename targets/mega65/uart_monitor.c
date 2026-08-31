@@ -34,6 +34,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 #include <sys/un.h>
 #endif
 
+// Forward declarations for functions defined in mega65.c
+extern void show_last_few_pcs(void);
+extern void start_saving(void);
+
 
 #define UNCONNECTED	XS_INVALID_SOCKET
 
